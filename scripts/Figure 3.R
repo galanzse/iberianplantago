@@ -44,7 +44,7 @@ factor_expansion <- 3.5
 
 ggplot(pca_scores_sp, aes(PC1, PC2)) +
   
-  geom_point(aes(color = habitat, shape = lifespan), size = 3) +
+  geom_point(aes(shape = habitat, color = lifespan), size = 3) +
   
   geom_hline(yintercept = 0, linetype = "dashed", color = "gray80") +
   geom_vline(xintercept = 0, linetype = "dashed", color = "gray80") +
@@ -66,11 +66,10 @@ ggplot(pca_scores_sp, aes(PC1, PC2)) +
                   box.padding = 0.5,
                   min.segment.length = Inf) +
   
-  # scale_color_manual(values = c("disturbed" = "orange", "natural" = "#00AFBB")) +
-  scale_shape_manual(values = c("annual" = 8, "perennial" = 17)) +
+  scale_shape_manual(values = c("disturbed" = 16, "natural" = 17)) +
 
   labs(
-    title = "Principal Component Analysis (N=14)",
+    title = NULL,
     x = paste0("PC1 (", round(sp_PCA$sdev[1]^2 / sum(sp_PCA$sdev^2) * 100, 1), "%)"),
     y = paste0("PC2 (", round(sp_PCA$sdev[2]^2 / sum(sp_PCA$sdev^2) * 100, 1), "%)"),
   ) +

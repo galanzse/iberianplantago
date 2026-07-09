@@ -11,13 +11,13 @@ library(ape)
 
 
 # filogenia
-load("C:/Users/javie/OneDrive/ACADEMICO/proyectos/plantago/phylogeny/imputed_tree.RData")
+load("phylogeny/imputed_tree.RData")
 
 
 # rasgos
 source('scripts/2. production x traits.R')
 
-traits = traits %>% merge(taxonomy[,c('code','species')]) %>% dplyr::select(species, SLA, height, seed_mass, anther_length, pollen_size, n_infl, infl_length, n_flowers_x_infl, n_grains_flower)
+traits = traits %>% merge(taxonomy[,c('code','species')]) %>% dplyr::select(species, SLA, height, seed_mass, anther_length, pollen_size, n_infl, infl_length, n_flowers_x_infl, n_grains_flower, n_grains_infl, n_grains_ind)
 
 rownames(traits) <- traits$species
 traits$species <- NULL

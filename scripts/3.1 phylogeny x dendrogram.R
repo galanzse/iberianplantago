@@ -42,7 +42,7 @@ plot(reproductive_den, main='Reproductive traits', horiz = TRUE)
 
 
 # Filogenia
-load("C:/Users/javie/OneDrive/ACADEMICO/proyectos/plantago/phylogeny/imputed_tree.RData")
+load("phylogeny/imputed_tree.RData")
 phylogeny = keep.tip(imputed_tree, rownames(traits))
 phylogeny_coph <- cophenetic(phylogeny)
 
