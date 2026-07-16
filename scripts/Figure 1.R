@@ -3,14 +3,9 @@
 # CORRELACION ENTRE TRAITS
 
 
+library(Hmisc)
+library(tidyverse)
 library(ggplot2)
-library(dplyr)
-library(tidyr)
-library(readxl)
-library(corrplot)
-library(vegan)
-library(factoextra)
-library(ggrepel)
 
 
 # data
@@ -26,48 +21,73 @@ data <- traits %>%
 # names
 colnames(data) = c("SLA", "height", "seed mass", "pollen size", "anther length", "n. infl.", "infl. length", "n. flowers per infl.", "n. grains per flower", "n. grains per infl.", "n, grains per ind.")
 
-# Correlations
-cor_matrix <- cor(data,
-                  method = "spearman",
-                  use = "pairwise.complete.obs")
+# Spearman correlation
+res <- rcorr(as.matrix(data), type = "spearman")
 
-# P-values
-p_matrix <- cor.mtest(data, method = "spearman")
+cor_mat <- res$r
+p_mat   <- res$P
 
-# Function to convert p-values to significance stars
-stars <- function(p){
-  ifelse(p < 0.001, "***",
-         ifelse(p < 0.01, "**",
-                ifelse(p < 0.05, "*", "")))
-}
 
-# Labels
-labels <- matrix(
-  paste0(sprintf("%.2f", cor_matrix), stars(p_matrix)),
-  nrow = nrow(cor_matrix)
-)
+# Remove diagonal
+diag(cor_mat) <- NA
+diag(p_mat) <- NA
 
-labels[lower.tri(labels)] <- ""
+cor_mat[lower.tri(cor_mat, diag = TRUE)] <- NA
+p_mat[lower.tri(p_mat, diag = TRUE)] <- NA
 
-par(mfrow = c(1,1), mar = c(4,4,4,4))
+cor_df <- as.data.frame(as.table(cor_mat))
+p_df   <- as.data.frame(as.table(p_mat))
 
-corrplot(cor_matrix,
-         method = "square",
-         type = "upper",
-         diag = TRUE,
-         col = "white",
-         border = "grey80",
-         tl.col = "black",
-         tl.cex = 0.8,
-         cl.pos = "n")
+df <- left_join(cor_df, p_df,
+                by = c("Var1","Var2"),
+                suffix = c(".cor",".p")) %>%
+  rename(correlation = Freq.cor,
+         p = Freq.p) %>%
+  filter(!is.na(correlation))
 
-n <- nrow(cor_matrix)
 
-for(i in 1:n){
-  for(j in i:n){
-    text(j, n - i + 1,
-         labels[i, j],
-         cex = 0.75)
-  }
-}
+cor_df <- as.data.frame(as.table(cor_mat))
+p_df   <- as.data.frame(as.table(p_mat))
+
+df <- left_join(cor_df, p_df,
+                by = c("Var1","Var2"),
+                suffix = c(".cor",".p")) %>%
+  rename(correlation = Freq.cor,
+         p = Freq.p) %>%
+  filter(!is.na(correlation))
+
+
+df <- df %>%
+  mutate(sig = case_when(
+    p < 0.001 ~ "***",
+    p < 0.01  ~ "**",
+    p < 0.05  ~ "*",
+    TRUE      ~ ""
+  ),
+  label = sprintf("%.2f%s", correlation, sig),
+  fontface = ifelse(p < 0.05, "bold", "plain"))
+
+
+ggplot(df, aes(Var1, Var2, fill = correlation)) +
+  geom_tile(color = "black") +
+  geom_text(aes(label = label,
+                fontface = fontface),
+            size = 3) +
+  scale_fill_gradient2(
+    low = "white",
+    mid = "white",
+    high = "white",
+    midpoint = 0,
+    limits = c(-1,1),
+    name = "Spearman\nρ"
+  ) +
+  coord_fixed() +
+  labs(x='', y='') +
+  theme_bw() +
+  theme(
+    legend.position = 'none',
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    panel.grid = element_blank()
+  )
+
 
